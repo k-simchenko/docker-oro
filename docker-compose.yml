@@ -1,0 +1,63 @@
+version: "3.9"
+services:
+    pgsql:
+        image: oroinc/pgsql:13.7-1-alpine
+        ports:
+            - "5432:5432"
+        labels:
+            com.symfony.server.service-prefix: ORO_DB
+        environment:
+            POSTGRES_USER: oro_db_user
+            POSTGRES_DB: oro_db
+            POSTGRES_PASSWORD: oro_db_pass
+            POSTGRES_ROOT_PASSWORD: oro_db_pass
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        healthcheck:
+            test: "pg_isready -U$${POSTGRES_USER} -d$${POSTGRES_DB}"
+            interval: 5s
+            timeout: 30s
+            start_period: 40s
+        restart: on-failure
+    web:
+        image: nginx:latest
+        ports:
+            - 8083:8080
+            - 80:80
+            - 443:443
+        volumes:
+            - localVolumeOro:/code
+            - ./nginx/conf.d.oro:/etc/nginx/conf.d
+            - ./log/nginx:/var/log/nginx
+            - ./php8.2/php-code:/php-code
+            - ./certs:/certs
+        links:
+            - php8.2
+    php8.2:
+        hostname: localServer
+        build: './php8.2'
+        volumes:
+            - localVolumeOro:/code
+            - ./log/php:/var/log/php
+        ports:
+            - "22:22"
+        links:
+          - redis
+          - mailcatcher
+          - pgsql
+    mailcatcher:
+        image: yappabe/mailcatcher
+        ports:
+            - "1025:1025"
+            - "1080:1080"
+    redis:
+        image: redis:6.2
+        restart: always
+        container_name: redis
+        ports:
+            - 6379:6379
+        environment:
+            TZ: Asia/Shanghai
+volumes:
+    localVolumeOro:
+    postgres-data: {}
