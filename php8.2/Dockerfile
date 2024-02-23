@@ -30,14 +30,34 @@ RUN apt-get update && apt-get install ssmtp -y
 RUN echo "sendmail_path = /usr/sbin/ssmtp -t" > /usr/local/etc/php/conf.d/sendmail.ini
 RUN echo "mailhub=mailcatcher:1025\nUseTLS=NO\nFromLineOverride=YES" > /etc/ssmtp/ssmtp.conf
 
-RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
-RUN docker-php-ext-install -j$(nproc) gd 
+RUN apt-get update && apt-get install  \
+        libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+        jpegoptim optipng pngquant gifsicle -y
+
+RUN apt-get update && \
+    apt-get install -y libwebp-dev && \
+    docker-php-ext-configure gd --with-webp;
+RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-install -j$(nproc) simplexml
 RUN docker-php-ext-install -j$(nproc) xml
 
+#For intell
+#RUN \
+#    apt-get update && \
+#    apt-get install libldap2-dev -y && \
+#    rm -rf /var/lib/apt/lists/* && \
+#    docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \ 
+#    docker-php-ext-install ldap
+
+# For mac
 RUN \
     apt-get update && \
-    apt-get install libldap2-dev -y
+    apt-get install libldap2-dev -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    docker-php-ext-configure ldap --with-libdir=lib/aarch64-linux-gnu/ && \ 
+    docker-php-ext-install ldap
+
+RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install -j$(nproc) pgsql
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql 
