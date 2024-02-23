@@ -37,10 +37,7 @@ RUN docker-php-ext-install -j$(nproc) xml
 
 RUN \
     apt-get update && \
-    apt-get install libldap2-dev -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
-    docker-php-ext-install ldap
+    apt-get install libldap2-dev -y
 
 RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install -j$(nproc) pgsql
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql 
