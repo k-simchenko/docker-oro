@@ -30,14 +30,6 @@ RUN apt-get update && apt-get install ssmtp -y
 RUN echo "sendmail_path = /usr/sbin/ssmtp -t" > /usr/local/etc/php/conf.d/sendmail.ini
 RUN echo "mailhub=mailcatcher:1025\nUseTLS=NO\nFromLineOverride=YES" > /etc/ssmtp/ssmtp.conf
 
-RUN apt-get update && apt-get install  \
-        libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
-        jpegoptim optipng pngquant gifsicle -y
-
-RUN apt-get update && \
-    apt-get install -y libwebp-dev && \
-    docker-php-ext-configure gd --with-webp;
-RUN docker-php-ext-install -j$(nproc) gd
 RUN docker-php-ext-install -j$(nproc) simplexml
 RUN docker-php-ext-install -j$(nproc) xml
 
@@ -92,12 +84,6 @@ CMD ["php-fpm", "-R"]
 WORKDIR /code
 
 RUN apt-get update; \
-    apt-get install -y libmagickwand-dev; \
-    pecl install imagick; \
-    docker-php-ext-enable imagick;
-
-
-RUN apt-get update; \
     apt-get install -y libnss3; \
     apt-get install -y libatk1.0-0; \
     apt-get install -y libatk-bridge2.0-0; \
@@ -105,3 +91,19 @@ RUN apt-get update; \
     apt-get install -y libxkbcommon-x11-0; \
     apt-get install -y libxcomposite-dev; \
     apt-get install -y libxdamage1;
+
+
+RUN apt-get update; \
+    apt-get install -y libmagickwand-dev; \
+    pecl install imagick; \
+    docker-php-ext-enable imagick;
+
+RUN apt-get update && apt-get install  \
+        libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+        jpegoptim optipng pngquant gifsicle -y
+
+RUN apt-get update && \
+    apt-get install -y libwebp-dev && \
+    docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
+
+RUN docker-php-ext-install -j$(nproc) gd
