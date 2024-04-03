@@ -107,3 +107,11 @@ RUN apt-get update && \
     docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
 
 RUN docker-php-ext-install -j$(nproc) gd
+
+RUN apt-get update && apt-get install postgresql-client -y
+
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
+ && locale-gen "en_US.UTF-8"
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
