@@ -1,7 +1,10 @@
 #!/bin/bash
-db_user=""
-db_pass=""
-db_name=""
+ORO_DB_URL=$(grep -Po '(?<=ORO_DB_URL=).+' .env-app.local)
+
+db_user=$(echo "$ORO_DB_URL" | sed -e 's|.*://\(.*\):.*@\S*|\1|')
+db_pass=$(echo "$ORO_DB_URL" | sed -e 's|.*://.*:\(.*\)@\S*|\1|')
+db_name=$(echo "$ORO_DB_URL" | sed -e 's|.*/\(.*\)?.*|\1|')
+db_host=$(echo "$ORO_DB_URL" | sed -e 's|.*@\(.*\):.*|\1|')
 backup_dir="./backup"
 print_green() {
     echo -e "\e[32m$1\e[0m"
@@ -30,11 +33,11 @@ select_file() {
 }
 
 process_file() {
-  dbname_template1="--dbname=postgresql://${db_user}:${db_pass}@pgsql/template1"
+  dbname_template1="--dbname=postgresql://${db_user}:${db_pass}@${db_host}/template1"
   psql "$dbname_template1" -c "DROP DATABASE $db_name WITH (FORCE);"
   psql "$dbname_template1" -c "CREATE DATABASE $db_name WITH OWNER $db_user;"
-  dbname="--dbname=postgresql://${db_user}:${db_pass}@pgsql/${db_name}"
-#  echo "psql "$dbname" "$db_name" < "${backup_dir}/${1}""
+  dbname="--dbname=postgresql://${db_user}:${db_pass}@${db_host}/${db_name}"
+
   psql "$dbname" "$db_name" < "${backup_dir}/${1}"
   rm -rf ./var/cache
   bin/console cache:clear
