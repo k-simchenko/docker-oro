@@ -1,4 +1,3 @@
-version: "3.9"
 services:
     pgsql:
         image: oroinc/pgsql:13.7-1-alpine
@@ -29,13 +28,13 @@ services:
             - localVolumeOro:/code
             - ./nginx/conf.d.oro:/etc/nginx/conf.d
             - ./log/nginx:/var/log/nginx
-            - ./php8.2/php-code:/php-code
+            - ./php8.3/php-code:/php-code
             - ./certs:/certs
         links:
-            - php8.2
-    php8.2:
+            - php8.3
+    php8.3:
         hostname: localServer
-        build: './php8.2'
+        build: './php8.3'
         volumes:
             - localVolumeOro:/code
             - ./log/php:/var/log/php
